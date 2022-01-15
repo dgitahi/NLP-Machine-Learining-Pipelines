@@ -53,28 +53,32 @@ def clean_data(df):
     return df
 
 
-def save_data(df, database_filename):
-    engine = create_engine(database_filename)
-    df.to_sql(df, engine, index=False)
+
+def save_data(df, database_filepath):
+    engine = create_engine('sqlite:///'+ str (database_filepath))
+    df.to_sql('Categories_df', engine, index=False, if_exists = 'replace')
 
 
 def main():
     if len(sys.argv) == 4:
+        messages_filepath = '/home/workspace/message.csv'
+        categories_filepath = '/home/workspace/categories.csv'
+        database_filepath = 'DisasterResponse.db'
 
-        messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
+        messages_filepath, categories_filepath,database_filepath  = sys.argv[1:]
 
         print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'
-              .format('/home/workspace/message.csv', '/home/workspace/categories.csv'))
-        df = load_data('/home/workspace/message.csv', '/home/workspace/categories.csv')
+              .format(messages_filepath, categories_filepath))
+        df = load_data(messages_filepath, categories_filepath)
 
         print('Cleaning data...')
         df = clean_data(df)
-        
-        print('Saving data...\n    DATABASE: {}'.format('sqlite:///ProjectMLPipelines.db'))
-        save_data('df_project', 'sqlite:///ProjectMLPipelines.db')
-        
+
+        print('Saving data...\n    DATABASE: {}'.format(database_filepath))
+        save_data(df, database_filepath)
+
         print('Cleaned data saved to database!')
-    
+
     else:
         print('Please provide the filepaths of the messages and categories '\
               'datasets as the first and second argument respectively, as '\
@@ -86,3 +90,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+

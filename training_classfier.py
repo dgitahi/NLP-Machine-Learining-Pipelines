@@ -30,6 +30,7 @@ from sklearn.model_selection import GridSearchCV
 
 
 
+
 def load_data(directory_file_path):
     engine = create_engine(directory_file_path)
     df = pd.read_sql_table('df_project',con= engine)
@@ -108,8 +109,17 @@ for col in category_names:
     print(col)
     print(classification_report(Y_test[col], y_pred[col]
                             , target_names=target_names))
+
+
+
+def save_model(model, model_filepath):
+    """ Saving model's best_estimator_ using pickle
+    """
+    pickle.dump(model.best_estimator_, open(model_filepath, 'wb'))
     
 
+
+#`python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl`
     
 def main():
     if len(sys.argv) == 3:
@@ -128,7 +138,7 @@ def main():
         evaluate_model(model, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, '/home/workspace')
+        save_model(model, model_filepath)
         
         print('Trained model saved!')
 
