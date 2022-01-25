@@ -1,5 +1,6 @@
 # import libraries
 import pandas as pd
+import sys
 import numpy as np
 from sqlalchemy  import create_engine
 import sqlite3
@@ -31,23 +32,34 @@ from sklearn.model_selection import GridSearchCV
 
 
 
-def load_data(directory_file_path):
-    engine = create_engine(directory_file_path)
-    df = pd.read_sql_table('df_project',con= engine)
-    df =df[(df['related']== 1) & (df['related']==0)]
-    X = df['message']
-    category_names = ['related', 'request', 'offer',
-           'aid_related', 'medical_help', 'medical_products',
-           'search_and_rescue', 'security', 'military', 'child_alone', 'water',
-           'food', 'shelter', 'clothing', 'money', 'missing_people',
-           'refugees', 'death', 'other_aid', 'infrastructure_related',
-           'transport', 'buildings', 'electricity', 'tools', 'hospitals',
-           'shops', 'aid_centers', 'other_infrastructure', 'weather_related',
-           'floods', 'storm', 'fire', 'earthquake', 'cold', 'other_weather',
-           'direct_report']
-    y = df[category_names]
+def load_data(database_filepath):
+    engine = create_engine('sqlite:///' + str (database_filepath))
+    
+    df = pd.read_sql('Categories_df',con= engine)
+    #dropping 'child_alone'
+    df = df.drop('child_alone', axis = 1)
 
-    return X,y,category_names
+    #droping 
+    df = df [df.related !=2]
+    
+    X = df['message']
+    
+    y = df.iloc[:,4:]
+
+
+
+    # category_names = ['related', 'request', 'offer',
+    #        'aid_related', 'medical_help', 'medical_products',
+    #        'search_and_rescue', 'security', 'military', 'child_alone', 'water',
+    #        'food', 'shelter', 'clothing', 'money', 'missing_people',
+    #        'refugees', 'death', 'other_aid', 'infrastructure_related',
+    #        'transport', 'buildings', 'electricity', 'tools', 'hospitals',
+    #        'shops', 'aid_centers', 'other_infrastructure', 'weather_related',
+    #        'floods', 'storm', 'fire', 'earthquake', 'cold', 'other_weather',
+    #        'direct_report']
+   
+
+    return X,y
 
 
 
@@ -88,7 +100,7 @@ def build_model():
 
     parameters ={
         'clf__estimator__n_estimators':[50,100,200],
-        'clf__estimator__criterion':['gini', 'entropy']
+        'clf__estimator__criterion':['gini', 'entropy'],
     
     }
 
@@ -98,26 +110,32 @@ def build_model():
 
 
 
-def evaluate_model(model, X_test, Y_test, category_names):
+
+
+
+def evaluate_model(model, X_test, Y_test):
     y_pred = model.predict(X_test)
     y_pred = pd.DataFrame(y_pred)
     #col_names = y_test.columns.values
+    category_names = Y_test.columns.values 
     y_pred.columns = category_names
 
-target_names = ['class 0', 'class 1','class 2']
-for col in category_names:
-    print(col)
-    print(classification_report(Y_test[col], y_pred[col]
-                            , target_names=target_names))
+    target_names = ['class 0', 'class 1']
+    for col in category_names:
+        print(col)
+        print(classification_report(Y_test[col], y_pred[col]
+                                , target_names=target_names))
 
 
 
-def save_model(model, model_filepath):
-    """ Saving model's best_estimator_ using pickle
-    """
-    pickle.dump(model.best_estimator_, open(model_filepath, 'wb'))
+# def save_model(model, model_filepath):
+#     """ Saving model's best_estimator_ using pickle
+#     """
+#     pickle.dump(model.best_estimator_, open(model_filepath, 'wb'))
     
-
+def save_model(model, model_filepath):
+    with open(model_filepath, 'wb') as file:
+        pickle.dump(model, file)
 
 #`python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl`
     
@@ -125,21 +143,22 @@ def main():
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
-        X, Y, category_names = load_data('sqlite:///ProjectMLPipelines.db')
+        #X, Y, category_names = load_data(database_filepath)
+        X, Y= load_data(database_filepath)
         X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
-        
+
         print('Building model...')
         model = build_model()
-        
+
         print('Training model...')
         model.fit(X_train, Y_train)
-        
+
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        evaluate_model(model, X_test, Y_test)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
-        
+
         print('Trained model saved!')
 
     else:
@@ -151,4 +170,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

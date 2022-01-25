@@ -59,12 +59,13 @@ def save_data(df, database_filepath):
     df.to_sql('Categories_df', engine, index=False, if_exists = 'replace')
 
 
+
+
+
+
 def main():
     if len(sys.argv) == 4:
-        messages_filepath = '/home/workspace/message.csv'
-        categories_filepath = '/home/workspace/categories.csv'
-        database_filepath = 'DisasterResponse.db'
-
+      
         messages_filepath, categories_filepath,database_filepath  = sys.argv[1:]
 
         print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'
@@ -90,6 +91,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
 
