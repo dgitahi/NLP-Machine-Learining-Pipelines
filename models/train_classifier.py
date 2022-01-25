@@ -30,23 +30,6 @@ import pickle
 
 
 
-
-
-
-# def load_data(database_filepath):
-#     engine = create_engine('sqlite:///' + str (database_filepath))
-    
-#     df = pd.read_sql('Categories_df',con= engine)
-#     #dropping 'child_alone'
-#     df = df.drop('child_alone', axis = 1)
-
-#     #droping 
-#     df = df [df.related !=2]
-    
-#     X = df['message']
-    
-#     y = df.iloc[:,4:]
-#     return X,y
 def load_data(database_filepath):
     engine = create_engine('sqlite:///'+database_filepath)
     df = pd.read_sql_table('DisasterResponse', engine)
@@ -105,17 +88,13 @@ def evaluate_model(model, X_test, y_test):
     print(class_report)
 
 
-# def save_model(model, model_filepath):
-#     """ Saving model's best_estimator_ using pickle
-#     """
-#     pickle.dump(model.best_estimator_, open(model_filepath, 'wb'))
+
     
 def save_model(model, model_filepath):
     with open(model_filepath, 'wb') as file:
         pickle.dump(model, file)
 
 
-#`python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl`
     
 def main():
     if len(sys.argv) == 3:
