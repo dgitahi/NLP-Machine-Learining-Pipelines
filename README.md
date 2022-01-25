@@ -27,3 +27,5 @@ Run the following commands in the project's root directory to set up your databa
 
 Go to http://0.0.0.0:3000/
 
+### Github Repo
+[githup repo](https://github.com/dgitahi/NLP-Machine-Learining-Pipelines)
